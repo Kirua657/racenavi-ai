@@ -55,6 +55,7 @@ type BetPlan = {
 
 type HistorySummary = {
   totalStake: number;
+  reviewedStake: number;
   totalPayout: number;
   profit: number;
   roi: number;
@@ -75,10 +76,10 @@ function raceTitle(plan: BetPlan) {
 }
 
 function statusBadge(plan: BetPlan) {
-  if (!plan.result) return { label: "未入力", className: "status-pending" };
+  if (!plan.result) return { label: "未振り返り", className: "status-pending" };
   return plan.result.hit
-    ? { label: "的中", className: "status-hit" }
-    : { label: "不的中", className: "status-miss" };
+    ? { label: "的中入力", className: "status-hit" }
+    : { label: "不的中入力", className: "status-miss" };
 }
 
 function finishText(value?: number | null) {
@@ -108,7 +109,7 @@ function rankOfPick(result: PlanResult | null | undefined, pick?: PredictionPick
 function predictionReviewItems(plan: BetPlan) {
   const result = plan.result;
   if (!result) {
-    return ["結果を入力すると、本命・穴馬・危険人気馬の振り返りがここに表示されます。"];
+    return ["レース後の着順を入力すると、本命・穴馬・危険人気馬の振り返りがここに表示されます。"];
   }
 
   const items: string[] = [];
@@ -147,8 +148,8 @@ function predictionReviewItems(plan: BetPlan) {
 
   items.push(
     result.hit
-      ? `買い目は的中。払戻は${result.payout.toLocaleString()}円でした。`
-      : "買い目は不的中。惜しかった点や買い方の広げ方をメモしておくと次に活かせます。",
+      ? `買い目シミュレーションは的中扱い。入力した払戻額は${result.payout.toLocaleString()}円でした。`
+      : "買い目シミュレーションは不的中扱い。惜しかった点や買い方の広げ方をメモしておくと次に活かせます。",
   );
 
   return items;
@@ -165,38 +166,49 @@ export default async function HistoryPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Review</p>
-          <h1>振り返り</h1>
+          <h1>保存した予想</h1>
         </div>
         <Link className="ghost-button" href="/races">
           レース一覧
         </Link>
       </div>
 
+      <section className="card guidance-card">
+        <strong>ここは購入履歴ではありません</strong>
+        <p>
+          レース詳細で作成したAI予想と買い目シミュレーションを保存する場所です。レース後の振り返りは任意で、実際の購入や投票は行いません。
+        </p>
+      </section>
+
       <section className="card summary-card dashboard-card">
         <div className="section-heading">
           <div>
             <p className="eyebrow">Summary</p>
-            <h2>損益サマリー</h2>
+            <h2>シミュレーション振り返り</h2>
           </div>
           <strong className={summary.profit >= 0 ? "profit" : "loss"}>
-            収支 {summary.profit.toLocaleString()}円
+            振り返り済み仮想収支 {summary.profit.toLocaleString()}円
           </strong>
         </div>
         <div className="summary-metrics">
           <div>
-            <span>合計購入額</span>
+            <span>保存した想定額</span>
             <strong>{summary.totalStake.toLocaleString()}円</strong>
           </div>
           <div>
-            <span>合計払戻額</span>
+            <span>振り返り済み想定額</span>
+            <strong>{summary.reviewedStake.toLocaleString()}円</strong>
+          </div>
+          <div>
+            <span>入力済み払戻</span>
             <strong>{summary.totalPayout.toLocaleString()}円</strong>
           </div>
           <div>
-            <span>回収率</span>
+            <span>仮想回収率</span>
             <strong>{summary.roi}%</strong>
           </div>
           <div>
-            <span>的中率</span>
+            <span>的中率（入力分）</span>
             <strong>
               {summary.hitRate}% <small>({summary.hitCount}/{summary.resultCount})</small>
             </strong>
@@ -220,12 +232,13 @@ export default async function HistoryPage() {
       </section>
 
       <div className="race-list history-list">
-        {plans.length === 0 && <p className="muted">保存された買い目はまだありません。</p>}
+        {plans.length === 0 && <p className="muted">保存した予想はまだありません。</p>}
         {plans.map((plan) => {
           const payout = plan.result?.payout ?? 0;
           const profit = plan.result ? payout - plan.totalStake : 0;
           const badge = statusBadge(plan);
           const main = mainPick(plan);
+          const payoutText = plan.result ? `${payout.toLocaleString()}円` : "未入力";
           return (
             <section key={plan.id} className="card history-card">
               <div className="summary-row">
@@ -238,19 +251,19 @@ export default async function HistoryPage() {
                 <div className="result-status-block">
                   <span className={`status-badge ${badge.className}`}>{badge.label}</span>
                   <strong className={plan.result ? (profit >= 0 ? "profit" : "loss") : "muted"}>
-                    {plan.result ? `${profit.toLocaleString()}円` : "結果未入力"}
+                    {plan.result ? `${profit.toLocaleString()}円` : "振り返り未入力"}
                   </strong>
                 </div>
               </div>
 
               <div className="result-detail-grid">
                 <div>
-                  <span>購入額</span>
+                  <span>想定額</span>
                   <strong>{plan.totalStake.toLocaleString()}円</strong>
                 </div>
                 <div>
-                  <span>払戻額</span>
-                  <strong>{payout.toLocaleString()}円</strong>
+                  <span>払戻入力</span>
+                  <strong>{payoutText}</strong>
                 </div>
                 <div>
                   <span>1着 / 2着 / 3着</span>
@@ -293,11 +306,11 @@ export default async function HistoryPage() {
                 {plan.result?.memo && <p className="muted small">メモ: {plan.result.memo}</p>}
               </div>
 
-              <div className="result-panel result-editor">
-                <div>
-                  <strong>結果入力</strong>
-                  <p className="muted small">着順を入れると、AI予想の振り返りが詳しくなります。</p>
-                </div>
+              <details className="result-panel result-editor">
+                <summary>
+                  <strong>レース後の振り返り（任意）</strong>
+                  <span className="muted small">実際の着順や仮の払戻額を入れると、AI予想の振り返りが詳しくなります。</span>
+                </summary>
                 <ResultForm
                   initialFirst={plan.result?.first ?? undefined}
                   initialHit={plan.result?.hit}
@@ -308,7 +321,7 @@ export default async function HistoryPage() {
                   initialThird={plan.result?.third ?? undefined}
                   planId={plan.id}
                 />
-              </div>
+              </details>
             </section>
           );
         })}

@@ -77,3 +77,25 @@ def test_update_bet_plan_result_persists_result():
     assert result["payout"] == 1200
     assert result["first"] == 4
     assert result["mainPickFinish"] == 2
+
+def test_preview_bet_plan_endpoint_does_not_persist_plan():
+    before = client.get("/api/bet-plans").json()
+    response = client.post(
+        "/api/bet-plans/preview",
+        json={
+            "raceId": "tokyo-2026-05-31-11",
+            "budget": 3000,
+            "objective": "balanced",
+            "riskLevel": "medium",
+            "allowTrifecta": False,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["race"]["id"] == "tokyo-2026-05-31-11"
+    assert body["totalStake"] <= 3000
+    assert body["tickets"]
+
+    after = client.get("/api/bet-plans").json()
+    assert len(after) == len(before)
+    assert not any(plan["id"] == body["id"] for plan in after)

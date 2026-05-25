@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Link>
             <nav className="site-nav" aria-label="主要ナビゲーション">
               <Link href="/races">レース一覧</Link>
-              <Link href="/history">履歴</Link>
+              <Link href="/history">保存した予想</Link>
               <Link href="/admin/import">CSV取り込み</Link>
             </nav>
           </div>

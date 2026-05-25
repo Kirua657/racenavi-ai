@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 .venv/
 venv/
 __pycache__/
@@ -32,3 +32,4 @@ server.err.log
 .codex_inspect_*/
 backend/tests/.tmp_*/
 backend/backend/tests/.tmp_*/
+.tmp-*screenshots*/

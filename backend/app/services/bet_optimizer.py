@@ -71,7 +71,12 @@ def generate_bet_plan(request: dict, prediction: dict) -> dict:
     top = main_picks[0]
     second = main_picks[1]
     third = main_picks[2]
-    value_enabled = value_pick and objective != "hit_rate"
+    value_pick_number = value_pick["horseNumber"] if value_pick else None
+    value_enabled = (
+        value_pick is not None
+        and objective != "hit_rate"
+        and value_pick_number not in {top["horseNumber"], second["horseNumber"]}
+    )
     value_partner = value_pick if value_enabled else third
     core_three = _unique_picks([top, second], value_partner, third)[:3]
 

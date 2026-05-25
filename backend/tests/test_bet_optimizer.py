@@ -1,3 +1,4 @@
+import re
 from app.core.mock_data import ENTRIES, RACES
 from app.services.bet_optimizer import generate_bet_plan
 from app.services.prediction_service import generate_prediction
@@ -87,3 +88,29 @@ def test_return_plan_keeps_trifecta_small_when_allowed():
     assert trifecta["stake"] <= 1000
     assert any("8" in ticket["combination"] for ticket in plan["tickets"])
     assert plan["totalStake"] <= 5000
+
+def test_plan_does_not_create_same_horse_combination_when_value_pick_is_top():
+    top = make_pick(12, "Top Value", popularity=8)
+    prediction = {
+        "picks": [
+            top,
+            make_pick(5, "Second"),
+            make_pick(3, "Third"),
+            make_pick(8, "Fourth"),
+        ],
+        "valuePick": top,
+        "dangerousFavorite": None,
+    }
+    request = {
+        "raceId": "race-3",
+        "budget": 3000,
+        "objective": "balanced",
+        "riskLevel": "medium",
+        "allowTrifecta": False,
+    }
+
+    plan = generate_bet_plan(request, prediction)
+
+    for ticket in plan["tickets"]:
+        numbers = re.split(r"-|→", ticket["combination"])
+        assert len(numbers) == len(set(numbers))

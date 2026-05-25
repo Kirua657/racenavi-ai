@@ -1,7 +1,7 @@
 from app.services.history_summary import summarize_plans
 
 
-def test_history_summary_calculates_profit_roi_and_hit_rate():
+def test_history_summary_calculates_profit_roi_and_hit_rate_from_reviewed_plans():
     plans = [
         {
             "totalStake": 3000,
@@ -26,9 +26,10 @@ def test_history_summary_calculates_profit_roi_and_hit_rate():
     summary = summarize_plans(plans)
 
     assert summary["totalStake"] == 6500
+    assert summary["reviewedStake"] == 5000
     assert summary["totalPayout"] == 6200
-    assert summary["profit"] == -300
-    assert summary["roi"] == 95.4
+    assert summary["profit"] == 1200
+    assert summary["roi"] == 124.0
     assert summary["hitCount"] == 1
     assert summary["resultCount"] == 2
     assert summary["hitRate"] == 50.0
@@ -37,13 +38,15 @@ def test_history_summary_calculates_profit_roi_and_hit_rate():
     assert summary["mainPickShowRate"] == 50.0
     assert summary["valuePickGoodRunCount"] == 1
     assert summary["dangerousFavoriteMissCount"] == 1
-    assert "将来の結果を保証しません" in summary["note"]
+    assert "振り返り記録だけ" in summary["note"]
+    assert "保証" in summary["note"]
 
 
 def test_history_summary_handles_empty_history():
     summary = summarize_plans([])
 
     assert summary["totalStake"] == 0
+    assert summary["reviewedStake"] == 0
     assert summary["totalPayout"] == 0
     assert summary["profit"] == 0
     assert summary["roi"] == 0.0

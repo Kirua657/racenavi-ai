@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.core.mock_data import ENTRIES, RACES
 from app.services.bet_optimizer import generate_bet_plan
-from app.services.bet_plan_store import list_plans, save_plan, update_result
+from app.services.bet_plan_store import build_race_summary, list_plans, save_plan, update_result
 from app.services.history_summary import summarize_plans
 from app.services.prediction_service import generate_prediction
 
@@ -29,6 +29,17 @@ def _prediction_snapshot(prediction: dict) -> dict:
 
 def _find_race(race_id: str) -> dict | None:
     return next((race for race in RACES if race["id"] == race_id), None)
+
+
+def _build_bet_plan(request: "BetPlanRequest") -> tuple[dict, dict]:
+    race = _find_race(request.raceId)
+    if not race:
+        raise HTTPException(status_code=404, detail="Race not found")
+    entries = [entry for entry in ENTRIES if entry["raceId"] == request.raceId]
+    prediction = generate_prediction(race, entries)
+    plan = generate_bet_plan(request.model_dump(), prediction)
+    plan["predictionSnapshot"] = _prediction_snapshot(prediction)
+    return plan, race
 
 
 def _with_prediction_snapshot(plan: dict) -> dict:
@@ -60,15 +71,15 @@ class ResultRequest(BaseModel):
     memo: str | None = None
 
 
+@router.post("/bet-plans/preview")
+def preview_bet_plan(request: BetPlanRequest):
+    plan, race = _build_bet_plan(request)
+    return {**plan, "race": build_race_summary(race)}
+
+
 @router.post("/bet-plans")
 def create_bet_plan(request: BetPlanRequest):
-    race = _find_race(request.raceId)
-    if not race:
-        raise HTTPException(status_code=404, detail="Race not found")
-    entries = [entry for entry in ENTRIES if entry["raceId"] == request.raceId]
-    prediction = generate_prediction(race, entries)
-    plan = generate_bet_plan(request.model_dump(), prediction)
-    plan["predictionSnapshot"] = _prediction_snapshot(prediction)
+    plan, race = _build_bet_plan(request)
     return save_plan(plan, race)
 
 

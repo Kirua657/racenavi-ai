@@ -1448,3 +1448,72 @@ body {
     width: 100%;
   }
 }
+.plan-confirm-card {
+  display: grid;
+  gap: 16px;
+}
+
+.confirm-header {
+  background: #263a31;
+}
+
+.pending-banner {
+  align-items: center;
+  background: #fff8e7;
+  border: 1px solid #ead9ad;
+  border-radius: 8px;
+  color: #594720;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.confirm-actions {
+  border-top: 1px solid #e6eee8;
+  padding-top: 14px;
+}
+.result-editor summary {
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  list-style: none;
+}
+
+.result-editor summary::-webkit-details-marker {
+  display: none;
+}
+
+.result-editor[open] summary {
+  margin-bottom: 12px;
+}
+.guidance-card {
+  background: #f8fbf7;
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 6px;
+}
+
+.guidance-card p {
+  color: var(--muted-ink);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.race-card-action {
+  color: var(--green);
+  font-size: 0.9rem;
+  font-weight: 800;
+  justify-self: start;
+}
+
+.simulation-notice {
+  background: #f4f7f3;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted-ink);
+  line-height: 1.7;
+  margin: 0;
+  padding: 12px;
+}

@@ -25,13 +25,13 @@ export function ResultForm({
   initialHit = false,
   initialMainPickFinish,
   initialMemo = "",
-  initialPayout = 0,
+  initialPayout,
   initialSecond,
   initialThird,
 }: ResultFormProps) {
   const router = useRouter();
   const [hit, setHit] = useState(initialHit);
-  const [payout, setPayout] = useState(String(initialPayout));
+  const [payout, setPayout] = useState(initialPayout === undefined ? "" : String(initialPayout));
   const [first, setFirst] = useState(initialFirst ? String(initialFirst) : "");
   const [second, setSecond] = useState(initialSecond ? String(initialSecond) : "");
   const [third, setThird] = useState(initialThird ? String(initialThird) : "");
@@ -49,7 +49,7 @@ export function ResultForm({
     try {
       await apiPost(`/api/bet-plans/${planId}/result`, {
         hit,
-        payout: Number(payout),
+        payout: payout.trim() === "" ? 0 : Number(payout),
         first: optionalNumber(first),
         second: optionalNumber(second),
         third: optionalNumber(third),
@@ -58,7 +58,7 @@ export function ResultForm({
       });
       router.refresh();
     } catch {
-      setError("結果を保存できませんでした。バックエンドが起動しているか確認してください。");
+      setError("振り返りを保存できませんでした。バックエンドが起動しているか確認してください。");
     } finally {
       setIsSaving(false);
     }
@@ -68,10 +68,10 @@ export function ResultForm({
     <form className="result-form" onSubmit={handleSubmit}>
       <label className="check-row">
         <input checked={hit} onChange={(event) => setHit(event.target.checked)} type="checkbox" />
-        的中
+        買い目シミュレーションが的中
       </label>
       <label>
-        払戻
+        仮の払戻額
         <input
           min={0}
           step={100}
@@ -106,7 +106,7 @@ export function ResultForm({
         <input value={memo} onChange={(event) => setMemo(event.target.value)} />
       </label>
       <button className="ghost-button" disabled={isSaving} type="submit">
-        {isSaving ? "保存中..." : "結果を保存"}
+        {isSaving ? "保存中..." : "振り返りを保存"}
       </button>
       {error && <p className="error-text">{error}</p>}
     </form>

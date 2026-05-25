@@ -71,10 +71,17 @@ export default async function RacesPage({ searchParams }: { searchParams: Promis
             CSV取り込み
           </Link>
           <Link className="ghost-button" href="/history">
-            履歴
+            保存した予想
           </Link>
         </div>
       </div>
+
+      <section className="card guidance-card">
+        <strong>基本の流れ</strong>
+        <p>
+          レースを選ぶと、AI予想・評価理由・買い目シミュレーションを確認できます。買い目は購入ではなく、保存してあとから振り返るための予想メモです。
+        </p>
+      </section>
 
       <form className="card filter-panel toolbar-card" action="/races">
         <div className="section-heading">
@@ -152,6 +159,7 @@ export default async function RacesPage({ searchParams }: { searchParams: Promis
               {race.courseType}{race.distance}m{race.turn ? `・${race.turn}` : ""} / 馬場: {race.going}
               {race.weather ? ` / 天気: ${race.weather}` : ""}
             </p>
+            <span className="race-card-action">AI予想と買い目プランを見る</span>
           </Link>
         ))}
       </div>
