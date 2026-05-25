@@ -1,17 +1,59 @@
-# RaceNavi AI MVP 運用手順書
+﻿# RaceNavi AI
 
-RaceNavi AI は、競馬初心者が「どの馬をなぜ評価したのか」「予算内でどう買い目を組むのか」「結果をどう振り返るのか」を確認するためのMVPです。予想、買い目生成、保存、履歴、CSVによるレース差し替えをローカル環境で試せます。
+![CI](https://github.com/Kirua657/racenavi-ai/actions/workflows/ci.yml/badge.svg)
 
-## 1. プロジェクト概要
+RaceNavi AI は、競馬初心者が「どの馬をなぜ評価したのか」「予算内でどう買い目を考えるのか」「結果をどう振り返るのか」を確認するためのMVPです。
 
-- Backend: FastAPI + SQLite + JSON/CSVデータ
-- Frontend: Next.js App Router
-- Race data: `backend/app/data/races.json`
-- CSV sample: `backend/app/data/sample_race.csv`
-- Main app URL: `http://localhost:3000`
-- Backend API: `http://localhost:8000`
+予想や買い目は参考情報です。的中や利益を保証するものではありません。
 
-## 2. MVPでできること
+## これは何か
+
+- レース条件に応じて、出走馬の評価ポイントを分かりやすく表示します
+- 予算、目的、リスクに合わせて買い目プランを作ります
+- 保存した買い目に結果を入力し、収支や回収率を過去の記録として振り返れます
+- レースデータは手元で合法的に用意したCSVから取り込めます
+
+## 画面でできること
+
+| 画面 | できること |
+| --- | --- |
+| `/races` | レース一覧、開催日・競馬場・距離・レース名での絞り込み |
+| `/races/[raceId]` | 出馬表、AI予想、評価ポイント、スコア内訳、買い目生成 |
+| `/history` | 保存済み買い目、損益サマリー、結果入力、AI予想の振り返り |
+| `/admin/import` | CSVアップロード、CSV検証、`races.json` への反映 |
+
+## スクリーンショット
+
+### レース一覧
+
+![レース一覧](docs/screenshots/races.png)
+
+### レース詳細・AI予想
+
+![レース詳細](docs/screenshots/race-detail.png)
+
+### 履歴・結果入力
+
+![履歴](docs/screenshots/history.png)
+
+### CSV取り込み
+
+![CSV取り込み](docs/screenshots/admin-import.png)
+
+## デモ手順
+
+1. `/races` を開き、東京11R 日本ダービーを選びます
+2. 出馬表とAI予想カードを見せます
+3. `スコア内訳を開く` で、なぜ評価されたかを確認します
+4. 買い目生成で `予算: 3000円 / 目的: バランス / リスク: 中` を選びます
+5. `買い目を作る` を押し、券種・組み合わせ・金額を確認します
+6. `/history` へ移動し、保存された買い目を確認します
+7. 結果入力で払戻、的中、1〜3着、本命着順、メモを入れます
+8. 損益サマリーとAI予想の振り返りを見せます
+
+詳しいデモ台本は [docs/DEMO_SCENARIO.md](docs/DEMO_SCENARIO.md) にあります。
+
+## MVPでできること
 
 - レース一覧の表示
 - 開催日、競馬場、芝/ダート、距離、レース名での絞り込み
@@ -23,7 +65,7 @@ RaceNavi AI は、競馬初心者が「どの馬をなぜ評価したのか」�
 - 損益サマリー、回収率、的中率、本命複勝圏率の確認
 - CSVから `races.json` へレースデータを取り込み
 
-## 3. できないこと・やらないこと
+## できないこと・やらないこと
 
 - 実際の馬券購入
 - 自動投票、購入代行、決済機能
@@ -33,7 +75,16 @@ RaceNavi AI は、競馬初心者が「どの馬をなぜ評価したのか」�
 - netkeibaなど外部サイトからの直接スクレイピング
 - 法的権利が不明なデータの自動収集
 
-## 4. 推奨作業場所
+## プロジェクト概要
+
+- Backend: FastAPI + SQLite + JSON/CSVデータ
+- Frontend: Next.js App Router
+- Race data: `backend/app/data/races.json`
+- CSV sample: `backend/app/data/sample_race.csv`
+- Main app URL: `http://localhost:3000`
+- Backend API: `http://localhost:8000`
+
+## 推奨作業場所
 
 OneDrive配下ではなく、以下のようなローカル開発用フォルダで作業してください。
 
@@ -43,7 +94,7 @@ C:\dev\keibaapp
 
 `node_modules`、`.next-build`、`.venv` などは小さなファイルが大量に作られるため、OneDrive同期対象に置くと容量・同期・ロックの問題が起きやすくなります。
 
-## 5. 初回セットアップ
+## 初回セットアップ
 
 Backend:
 
@@ -60,7 +111,7 @@ cd C:\dev\keibaapp\frontend
 npm install --cache .\.npm-cache
 ```
 
-## 6. バックエンド起動方法
+## バックエンド起動方法
 
 ```powershell
 cd C:\dev\keibaapp\backend
@@ -76,7 +127,7 @@ http://localhost:8000/health
 
 `{"status":"ok"}` が返れば起動しています。
 
-## 7. フロントエンド起動方法
+## フロントエンド起動方法
 
 ```powershell
 cd C:\dev\keibaapp\frontend
@@ -89,7 +140,7 @@ npm run dev
 http://localhost:3000
 ```
 
-## 8. CSV取り込み方法
+## CSV取り込み方法
 
 CSVは1行につき1頭です。同じ `race_id` の行が1つのレースとしてまとめられます。手元で合法的に用意したCSVだけを使ってください。
 
@@ -116,7 +167,7 @@ cd C:\dev\keibaapp\backend
 4. `CSVを取り込む` を押します
 5. 成功時は取り込んだレース数・出走馬数が表示されます
 
-## 9. レース確認URL
+## レース確認URL
 
 ```text
 http://localhost:3000/races
@@ -125,7 +176,7 @@ http://localhost:3000/history
 http://localhost:3000/admin/import
 ```
 
-## 10. 買い目生成・履歴・結果入力の使い方
+## 買い目生成・履歴・結果入力の使い方
 
 1. `/races` で見たいレースを探します
 2. レース詳細でAI予想、評価ポイント、スコア内訳を確認します
@@ -135,7 +186,7 @@ http://localhost:3000/admin/import
 6. レース後に的中、払戻、1〜3着、本命の着順、メモを入力します
 7. 損益サマリーとAI予想の振り返りを確認します
 
-## 11. 動作確認
+## 動作確認
 
 Backend tests:
 
@@ -151,7 +202,9 @@ cd C:\dev\keibaapp\frontend
 npm run build
 ```
 
-## 12. 法律・免責・データ利用の注意
+GitHub Actionsでも `pytest` と `npm run build` を自動実行します。
+
+## 法律・免責・データ利用の注意
 
 - RaceNavi AI は予想情報、買い目シミュレーション、振り返りを支援するMVPです
 - 的中、払戻、利益、回収率を保証しません
@@ -160,7 +213,7 @@ npm run build
 - このMVPでは外部サイトからの直接スクレイピングは実装しません
 - CSVに入れるデータは、手元で合法的に利用できるものだけにしてください
 
-## 13. トラブルシューティング
+## トラブルシューティング
 
 ### `localhost:3000` が開けない
 
@@ -197,7 +250,7 @@ row 2, field 'odds': expected number, got 'abc'
 
 プロジェクトを `C:\dev\keibaapp` などOneDrive外へ置いてください。`node_modules`、`.venv`、`.next-build` はGitにも同期にも含めない運用を推奨します。
 
-## 14. GitHubへ上げる前の確認手順
+## GitHubへ上げる前の確認手順
 
 1. 作業場所が `C:\dev\keibaapp` であることを確認します
 2. `.gitignore` に生成物が含まれていることを確認します
